@@ -32,7 +32,7 @@ export function GallerySection() {
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
               <div className="absolute top-2 right-2 sm:top-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-white text-xs sm:text-sm font-serif italic bg-black/40 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">MIA</span>
+                <span className="text-white text-xs sm:text-sm font-serif italic bg-black/40 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">AMICI</span>
               </div>
             </div>
           ))}

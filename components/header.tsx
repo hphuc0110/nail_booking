@@ -16,7 +16,7 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-rose-100">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-rose-900">MIA NAILS</span>
+          <span className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-rose-900">AMICI NAILS SALON</span>
         </Link>
 
         {/* Desktop Navigation */}

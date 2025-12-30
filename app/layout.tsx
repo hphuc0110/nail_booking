@@ -11,14 +11,14 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata: Metadata = {
-  title: "Mia Nails Karlsruhe | Nail Salon Booking",
+  title: "Amici Nail Salon | Nail Salon Booking",
   description:
     "High-quality manicure and pedicure, acrylic and gel nails, nail design and more. Book your appointment today!",
   generator: "v0.app",
-  keywords: ["nail salon", "manicure", "pedicure", "gel nails", "acrylic nails", "Karlsruhe", "booking"],
+  keywords: ["nail salon", "manicure", "pedicure", "gel nails", "acrylic nails", "Rastatt", "booking"],
   openGraph: {
-    title: "Mia Nails Karlsruhe",
-    description: "Premium nail salon services in Karlsruhe",
+    title: "Amici Nail Salon",
+    description: "Premium nail salon services in Rastatt",
     type: "website",
   },
 }

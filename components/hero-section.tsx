@@ -29,9 +29,6 @@ export function HeroSection() {
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-center">
           {/* Left Content */}
           <div className="space-y-3 sm:space-y-4 md:space-y-6 order-2 md:order-1">
-            <div className="flex items-center gap-2 text-[10px] sm:text-xs md:text-sm text-gray-600">
-              <span className="font-serif italic">MIA NAGELSTUDIO</span>
-            </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-serif font-bold text-gray-900 tracking-tight leading-tight">
               {t("heroTitle", lang)}

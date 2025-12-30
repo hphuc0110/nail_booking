@@ -215,7 +215,7 @@ export const translations = {
     admin: "Admin",
 
     // Hero Section
-    heroTitle: "MIA NAILS",
+    heroTitle: "AMICI NAILS SALON",
     heroSubtitle:
       "Wir sind stolz darauf, Ihnen hochwertige Maniküre und Pediküre, Acryl- und Gelnägel, Nageldesign und vieles mehr anzubieten.",
     ourServices: "UNSERE LEISTUNGEN",

@@ -43,7 +43,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Pedicure incl. Massage",
         nameVi: "Làm móng chân kèm massage",
         nameDe: "inkl. Massage",
-        price: 30,
+        price: 28,
         duration: 45,
         category: "PEDICURE",
         categoryVi: "LÀM MÓNG CHÂN",
@@ -192,7 +192,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Refill",
         nameVi: "Đắp bù",
         nameDe: "Auffüllen",
-        price: 37,
+        price: 35,
         duration: 60,
         category: "LIQUID GEL",
         categoryVi: "GEL LỎNG",
@@ -214,7 +214,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Refill Gel Polish",
         nameVi: "Đắp bù sơn gel",
         nameDe: "Auffüllen Gel-lack",
-        price: 42,
+        price: 40,
         duration: 65,
         category: "LIQUID GEL",
         categoryVi: "GEL LỎNG",
@@ -388,13 +388,13 @@ export const serviceCategories: ServiceCategory[] = [
 ]
 
 export const businessHours: BusinessHours[] = [
-  { day: "Monday", dayVi: "Thứ Hai", dayDe: "Montag", open: "09:00", close: "20:00", closed: false },
-  { day: "Tuesday", dayVi: "Thứ Ba", dayDe: "Dienstag", open: "09:00", close: "20:00", closed: false },
-  { day: "Wednesday", dayVi: "Thứ Tư", dayDe: "Mittwoch", open: "09:00", close: "20:00", closed: false },
-  { day: "Thursday", dayVi: "Thứ Năm", dayDe: "Donnerstag", open: "09:00", close: "20:00", closed: false },
-  { day: "Friday", dayVi: "Thứ Sáu", dayDe: "Freitag", open: "09:00", close: "20:00", closed: false },
-  { day: "Saturday", dayVi: "Thứ Bảy", dayDe: "Samstag", open: "09:00", close: "20:00", closed: false },
-  { day: "Sunday", dayVi: "Chủ Nhật", dayDe: "Sonntag", open: "", close: "", closed: true },
+  { day: "Monday", dayVi: "Thứ Hai", dayDe: "Montag", open: "09:00", close: "19:00", closed: false },
+  { day: "Tuesday", dayVi: "Thứ Ba", dayDe: "Dienstag", open: "09:00", close: "19:00", closed: false },
+  { day: "Wednesday", dayVi: "Thứ Tư", dayDe: "Mittwoch", open: "09:00", close: "19:00", closed: false },
+  { day: "Thursday", dayVi: "Thứ Năm", dayDe: "Donnerstag", open: "09:00", close: "19:00", closed: false },
+  { day: "Friday", dayVi: "Thứ Sáu", dayDe: "Freitag", open: "09:00", close: "19:00", closed: false },
+  { day: "Saturday", dayVi: "Thứ Bảy", dayDe: "Samstag", open: "09:00", close: "19:00", closed: false },
+  { day: "Sunday", dayVi: "Chủ Nhật", dayDe: "Sonntag", open: "09:00", close: "19:00", closed: false },
 ]
 
 export const galleryImages = [
@@ -409,12 +409,10 @@ export const galleryImages = [
 ]
 
 export const contactInfo = {
-  name: "Mia Nails Karlsruhe",
-  address: "Bürgerstraße 9 F (Ecke Amalienstraße), 76133 Karlsruhe, Germany",
+  name: "Amici Nail Salon",
+  address: "Kapellen Str 11, Rastatt , Germany",
   email: "mianailskarlsruhe@gmail.com",
-  phone: "004972150444412",
+  phone: "0722 21656351 / 0176 43299127",
   instagram: "https://instagram.com/MiaNailsKarlsruhe",
   facebook: "https://facebook.com/MiaNailsKarlsruhe",
-  tiktok: "https://tiktok.com/@MiaNailsKarlsruhe",
-  googleReview: "https://g.page/MiaNailsKarlsruhe/review",
 }

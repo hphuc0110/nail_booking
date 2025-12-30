@@ -176,7 +176,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-4">
             <Link href="/">
-              <span className="text-xl font-serif font-bold text-rose-600">MIA NAILS</span>
+              <span className="text-xl font-serif font-bold text-rose-600">AMICI NAILS SALON</span>
             </Link>
             <Button
               onClick={handleLogout}
