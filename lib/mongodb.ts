@@ -8,12 +8,21 @@ const baseUri = process.env.MONGODB_URI ||
                 process.env.NEXT_PUBLIC_MONGODB_URI || 
                 'mongodb+srv://cclemonchanh04_db_user:hQuEWZnebsLVvKRu@nail.94rxnva.mongodb.net/?appName=nail'
 
-// Ensure connection string has proper SSL parameters
-const uri = baseUri.includes('retryWrites') 
-  ? baseUri 
-  : baseUri.includes('?') 
-    ? `${baseUri}&retryWrites=true&w=majority`
-    : `${baseUri}?retryWrites=true&w=majority`
+// Ensure connection string has proper parameters for production
+// Add database name and connection parameters
+let uri = baseUri
+
+// If URI doesn't have database name, add it
+if (!uri.includes('/nail-booking') && !uri.includes('/?') && !uri.includes('&')) {
+  uri = uri.replace('mongodb+srv://', 'mongodb+srv://').replace('@nail.94rxnva.mongodb.net', '@nail.94rxnva.mongodb.net/nail-booking')
+}
+
+// Add connection parameters if not present
+if (!uri.includes('retryWrites')) {
+  uri = uri.includes('?') 
+    ? `${uri}&retryWrites=true&w=majority`
+    : `${uri}?retryWrites=true&w=majority`
+}
 
 // Debug: Log environment variables (only in development)
 if (process.env.NODE_ENV === 'development') {
@@ -46,12 +55,12 @@ const options = {
     deprecationErrors: false, // Set to false to avoid deprecation errors
   },
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 10000, // Increase timeout
+  serverSelectionTimeoutMS: 30000, // Increase timeout for production
   socketTimeoutMS: 45000,
-  // SSL/TLS options to fix connection issues
-  tls: true,
-  tlsAllowInvalidCertificates: false,
-  tlsAllowInvalidHostnames: false,
+  connectTimeoutMS: 30000,
+  // SSL/TLS options - important for Vercel/production
+  // Don't set tls: true explicitly as mongodb+srv:// already uses TLS
+  // tlsAllowInvalidCertificates: false, // Keep default (false) for security
   // Retry options
   retryWrites: true,
   retryReads: true,
