@@ -114,6 +114,37 @@ export default function BookingPage() {
     }
   }
 
+  // Helper function to check if a date is today (only compare date, not time)
+  const isToday = (date: Date): boolean => {
+    const today = new Date()
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    )
+  }
+
+  // Helper function to check if a time slot has passed today
+  const isTimeSlotPassed = (time: string): boolean => {
+    if (!selectedDate || !isToday(selectedDate)) {
+      return false
+    }
+    const now = new Date()
+    const [hours, minutes] = time.split(':').map(Number)
+    const slotTime = new Date()
+    slotTime.setHours(hours, minutes, 0, 0)
+    return slotTime <= now
+  }
+
+  // Reset selected time when date changes
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date)
+    // Reset time if date changes
+    if (date) {
+      setSelectedTime("")
+    }
+  }
+
   const canProceedToStep2 = selectedServices.length > 0
   const canProceedToStep3 = selectedDate && selectedTime
   const canSubmit = customerInfo.name && customerInfo.phone && customerInfo.email
@@ -250,8 +281,15 @@ export default function BookingPage() {
                       <Calendar
                         mode="single"
                         selected={selectedDate}
-                        onSelect={setSelectedDate}
-                        disabled={(date) => date < new Date() || date.getDay() === 0}
+                        onSelect={handleDateSelect}
+                        disabled={(date) => {
+                          const today = new Date()
+                          today.setHours(0, 0, 0, 0)
+                          const compareDate = new Date(date)
+                          compareDate.setHours(0, 0, 0, 0)
+                          // Disable only if date is in the past (allow Sunday and today)
+                          return compareDate < today
+                        }}
                         className="rounded-md border mx-auto w-full"
                       />
                     </div>
@@ -262,19 +300,26 @@ export default function BookingPage() {
                   <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4">
                     <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-2 sm:mb-3">{t("selectTime", lang)}</h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5 sm:gap-2 max-h-[300px] sm:max-h-none overflow-y-auto">
-                      {timeSlots.map((time) => (
-                        <button
-                          key={time}
-                          onClick={() => setSelectedTime(time)}
-                          className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${
-                            selectedTime === time
-                              ? "bg-rose-500 text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
+                      {timeSlots.map((time) => {
+                        const isPassed = isTimeSlotPassed(time)
+                        const isDisabled = isPassed
+                        return (
+                          <button
+                            key={time}
+                            onClick={() => !isDisabled && setSelectedTime(time)}
+                            disabled={isDisabled}
+                            className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${
+                              isDisabled
+                                ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                                : selectedTime === time
+                                ? "bg-rose-500 text-white"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
