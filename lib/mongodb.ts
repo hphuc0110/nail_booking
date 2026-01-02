@@ -3,9 +3,17 @@ import { MongoClient, Db, ServerApiVersion } from 'mongodb'
 // Get MongoDB URI from environment variables
 // Next.js automatically loads .env, .env.local, .env.development, etc.
 // Fallback to hardcoded value if env var is not available (for development/build)
-const uri = process.env.MONGODB_URI || 
-            process.env.NEXT_PUBLIC_MONGODB_URI || 
-            'mongodb+srv://cclemonchanh04_db_user:hQuEWZnebsLVvKRu@nail.94rxnva.mongodb.net/?appName=nail'
+// Add retryWrites and tls options to connection string
+const baseUri = process.env.MONGODB_URI || 
+                process.env.NEXT_PUBLIC_MONGODB_URI || 
+                'mongodb+srv://cclemonchanh04_db_user:hQuEWZnebsLVvKRu@nail.94rxnva.mongodb.net/?appName=nail'
+
+// Ensure connection string has proper SSL parameters
+const uri = baseUri.includes('retryWrites') 
+  ? baseUri 
+  : baseUri.includes('?') 
+    ? `${baseUri}&retryWrites=true&w=majority`
+    : `${baseUri}?retryWrites=true&w=majority`
 
 // Debug: Log environment variables (only in development)
 if (process.env.NODE_ENV === 'development') {
@@ -40,6 +48,13 @@ const options = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 10000, // Increase timeout
   socketTimeoutMS: 45000,
+  // SSL/TLS options to fix connection issues
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false,
+  // Retry options
+  retryWrites: true,
+  retryReads: true,
 }
 
 let client: MongoClient
