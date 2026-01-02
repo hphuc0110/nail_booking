@@ -76,24 +76,42 @@ export default function BookingPage() {
     )
   }
 
-  const handleSubmit = () => {
-    const booking: Booking = {
-      id: generateId(),
-      customerName: customerInfo.name,
-      customerPhone: customerInfo.phone,
-      customerEmail: customerInfo.email,
-      services: selectedServices,
-      date: selectedDate?.toISOString().split("T")[0] || "",
-      time: selectedTime,
-      notes: customerInfo.notes,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      totalPrice,
-      totalDuration,
-    }
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string>("")
 
-    saveBooking(booking)
-    setBookingComplete(true)
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    setSubmitError("")
+    
+    try {
+      const booking: Booking = {
+        id: generateId(),
+        customerName: customerInfo.name,
+        customerPhone: customerInfo.phone,
+        customerEmail: customerInfo.email,
+        services: selectedServices,
+        date: selectedDate?.toISOString().split("T")[0] || "",
+        time: selectedTime,
+        notes: customerInfo.notes,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        totalPrice,
+        totalDuration,
+      }
+
+      const result = await saveBooking(booking)
+      if (result) {
+        setBookingComplete(true)
+      } else {
+        setSubmitError("Failed to save booking. Please try again.")
+      }
+    } catch (error: any) {
+      console.error("Booking submission error:", error)
+      const errorMessage = error?.message || error?.toString() || "Failed to save booking. Please try again."
+      setSubmitError(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const canProceedToStep2 = selectedServices.length > 0
@@ -330,18 +348,24 @@ export default function BookingPage() {
                       rows={3}
                     />
                   </div>
+                  
+                  {submitError && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600">{submitError}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-4 sm:p-6 border-t border-gray-100 flex gap-2 sm:gap-3">
-                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1 text-sm sm:text-base">
+                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1 text-sm sm:text-base" disabled={isSubmitting}>
                     {t("back", lang)}
                   </Button>
                   <Button
                     onClick={handleSubmit}
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isSubmitting}
                     className="flex-1 bg-rose-500 hover:bg-rose-600 text-white disabled:opacity-50 text-sm sm:text-base"
                   >
-                    {t("confirmBooking", lang)}
+                    {isSubmitting ? t("saving", lang) || "Saving..." : t("confirmBooking", lang)}
                   </Button>
                 </div>
               </div>

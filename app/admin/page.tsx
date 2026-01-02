@@ -50,8 +50,8 @@ export default function AdminPage() {
     loadBookings()
   }, [])
 
-  const loadBookings = () => {
-    const data = getBookings()
+  const loadBookings = async () => {
+    const data = await getBookings()
     setBookings(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
   }
 
@@ -128,19 +128,28 @@ export default function AdminPage() {
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmUpdateStatus = () => {
+  const confirmUpdateStatus = async () => {
     if (selectedBooking) {
-      updateBooking(selectedBooking.id, { status: editStatus })
-      loadBookings()
+      await updateBooking(selectedBooking.id, { status: editStatus })
+      await loadBookings()
       setIsEditDialogOpen(false)
     }
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedBooking) {
-      deleteBooking(selectedBooking.id)
-      loadBookings()
-      setIsDeleteDialogOpen(false)
+      try {
+        const success = await deleteBooking(selectedBooking.id)
+        if (success) {
+          await loadBookings()
+          setIsDeleteDialogOpen(false)
+        } else {
+          alert('Failed to delete booking. Please try again.')
+        }
+      } catch (error: any) {
+        console.error('Error in confirmDelete:', error)
+        alert(`Failed to delete booking: ${error?.message || 'Unknown error'}`)
+      }
     }
   }
 
