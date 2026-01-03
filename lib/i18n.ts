@@ -11,7 +11,7 @@ export const translations = {
     admin: "Admin",
 
     // Hero Section
-    heroTitle: "MIA NAILS",
+    heroTitle: "AMICI NAILS SALON",
     heroSubtitle:
       "We are proud to offer you high-quality manicure and pedicure, acrylic and gel nails, nail design and much more.",
     ourServices: "OUR SERVICES",
@@ -113,7 +113,7 @@ export const translations = {
     admin: "Quản Trị",
 
     // Hero Section
-    heroTitle: "MIA NAILS",
+    heroTitle: "AMICI NAILS SALON",
     heroSubtitle:
       "Chúng tôi tự hào mang đến cho bạn dịch vụ làm móng tay và móng chân chất lượng cao, móng acrylic và gel, thiết kế móng và nhiều hơn nữa.",
     ourServices: "DỊCH VỤ CỦA CHÚNG TÔI",

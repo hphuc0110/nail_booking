@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import type { Booking } from '@/lib/types'
+import { sendBookingConfirmationEmail } from '@/lib/email'
 
 // GET - Lấy tất cả bookings
 export async function GET() {
@@ -47,6 +48,32 @@ export async function POST(request: NextRequest) {
     
     if (result.insertedId) {
       console.log('Booking inserted successfully with ID:', result.insertedId)
+      
+      // Send confirmation email (non-blocking - don't fail booking if email fails)
+      try {
+        console.log('=== ATTEMPTING TO SEND EMAIL ===')
+        console.log('Customer email:', booking.customerEmail)
+        console.log('RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY)
+        console.log('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL || 'Not set (using default)')
+        
+        const emailResult = await sendBookingConfirmationEmail(booking)
+        
+        if (emailResult.success) {
+          console.log('✅ Confirmation email sent successfully!')
+          console.log('Message ID:', emailResult.messageId)
+        } else {
+          console.error('❌ Failed to send confirmation email')
+          console.error('Error:', emailResult.error)
+          console.error('Details:', emailResult.details)
+        }
+      } catch (emailError: any) {
+        // Log error but don't fail the booking
+        console.error('❌ Exception while sending confirmation email:')
+        console.error('Error type:', emailError?.constructor?.name)
+        console.error('Error message:', emailError?.message)
+        console.error('Error stack:', emailError?.stack)
+      }
+      
       return NextResponse.json(
         { ...booking, _id: result.insertedId },
         { status: 201 }
