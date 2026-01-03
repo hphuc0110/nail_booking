@@ -411,7 +411,7 @@ export const galleryImages = [
 export const contactInfo = {
   name: "Amici Nail Salon",
   address: "Kapellen Str 11, Rastatt , Germany",
-  email: "mianailskarlsruhe@gmail.com",
+  email: "phuonglinhdang89@gmail.com",
   phone: "0722 21656351 / 0176 43299127",
   instagram: "https://www.instagram.com/amici_nailsalon/",
 }

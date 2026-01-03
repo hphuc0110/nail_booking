@@ -64,7 +64,17 @@ export async function POST(request: NextRequest) {
         } else {
           console.error('❌ Failed to send confirmation email')
           console.error('Error:', emailResult.error)
-          console.error('Details:', emailResult.details)
+          
+          // Special handling for domain verification requirement
+          if (emailResult.requiresDomainVerification) {
+            console.error('')
+            console.error('📧 EMAIL NOT SENT - Domain verification required')
+            console.error('   The booking was saved, but email confirmation was not sent.')
+            console.error('   This is expected in test mode. Verify domain in Resend to enable email sending.')
+            console.error('')
+          } else {
+            console.error('Details:', emailResult.details)
+          }
         }
       } catch (emailError: any) {
         // Log error but don't fail the booking

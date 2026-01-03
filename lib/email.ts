@@ -171,14 +171,31 @@ Das Team von AMICI NAILS SALON
       console.error('Error:', result.error)
       
       // Check if it's a test mode limitation
-      if (result.error.message?.includes('only send testing emails to your own email')) {
-        console.warn('⚠️ Resend Test Mode: Can only send to registered email address')
-        console.warn('To send to any email, verify a domain in Resend Dashboard')
+      if (result.error.message?.includes('only send testing emails to your own email') || 
+          result.error.message?.includes('verify a domain')) {
+        console.error('⚠️ ==========================================')
+        console.error('⚠️ RESEND DOMAIN NOT VERIFIED')
+        console.error('⚠️ ==========================================')
+        console.error('⚠️ Current mode: TEST MODE (limited)')
+        console.error('⚠️ Can only send to: cclemonchanh04@gmail.com')
+        console.error('⚠️')
+        console.error('⚠️ SOLUTION: Verify domain in Resend Dashboard')
+        console.error('⚠️ 1. Go to: https://resend.com/domains')
+        console.error('⚠️ 2. Add your domain')
+        console.error('⚠️ 3. Add DNS records (SPF, DKIM)')
+        console.error('⚠️ 4. Wait for verification (5-30 min)')
+        console.error('⚠️ 5. Update RESEND_FROM_EMAIL to use verified domain')
+        console.error('⚠️ 6. Redeploy application')
+        console.error('⚠️ ==========================================')
+        console.error('⚠️ Booking was saved successfully, but email was not sent')
+        console.error('⚠️ Customer email:', booking.customerEmail)
+        console.error('⚠️ ==========================================')
         return { 
           success: false, 
-          error: 'Resend test mode limitation: Can only send to registered email. Verify domain to send to any email.',
+          error: 'Domain not verified. Please verify domain in Resend Dashboard to send emails to any recipient.',
           details: result.error,
-          isTestModeLimit: true
+          isTestModeLimit: true,
+          requiresDomainVerification: true
         }
       }
       
