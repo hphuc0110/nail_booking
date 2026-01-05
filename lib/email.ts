@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import type { Booking } from './types'
+import { formatDateGMT1 } from './timezone'
 
 export async function sendBookingConfirmationEmail(booking: Booking) {
   // Check if Resend API key is configured
@@ -21,13 +22,28 @@ export async function sendBookingConfirmationEmail(booking: Booking) {
     console.log('To:', booking.customerEmail)
     console.log('From:', process.env.RESEND_FROM_EMAIL || 'AMICI NAILS SALON <noreply@yourdomain.com>')
     console.log('Subject: Terminbestätigung -', booking.id)
-    // Format date and time in German
-    const bookingDate = new Date(booking.date).toLocaleDateString('de-DE', {
+    
+    // Format date in German (GMT+1)
+    // Parse the date string as GMT+1 date
+    const [year, month, day] = booking.date.split('-').map(Number)
+    // Create a date object representing the date in GMT+1
+    // We'll format it using UTC methods but treat it as GMT+1
+    const bookingDateObj = new Date(Date.UTC(year, month - 1, day))
+    // Format as German date string
+    const bookingDate = bookingDateObj.toLocaleDateString('de-DE', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'Europe/Berlin' // GMT+1 timezone
     })
+    
+    // Format total duration
+    const hours = Math.floor(booking.totalDuration / 60)
+    const minutes = booking.totalDuration % 60
+    const durationText = hours > 0 
+      ? `${hours} ${hours === 1 ? 'Stunde' : 'Stunden'}${minutes > 0 ? ` ${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}` : ''}`
+      : `${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`
     
     // Format services list
     const servicesList = booking.services.map(service => {
@@ -58,45 +74,49 @@ export async function sendBookingConfirmationEmail(booking: Booking) {
           </div>
           
           <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Hallo <strong>${booking.customerName}</strong>,</p>
+            <p style="font-size: 16px; margin-bottom: 20px;">Sehr geehrte/r <strong>${booking.customerName}</strong>,</p>
             
             <p style="font-size: 16px; margin-bottom: 20px;">
-              Vielen Dank für Ihre Terminbuchung bei AMICI NAILS SALON! Wir haben Ihre Buchungsanfrage erhalten und werden uns schnellstmöglich bei Ihnen melden, um Ihren Termin zu bestätigen.
+              vielen Dank für Ihre Terminbuchung bei <strong>AMICI NAILS SALON</strong>! Wir haben Ihre Buchungsanfrage erhalten und werden uns innerhalb der nächsten 24 Stunden bei Ihnen melden, um Ihren Termin zu bestätigen.
             </p>
             
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="color: #f43f5e; margin-top: 0; font-size: 20px; margin-bottom: 15px;">Buchungsinformationen</h2>
+              <h2 style="color: #f43f5e; margin-top: 0; font-size: 20px; margin-bottom: 15px;">📋 Buchungsdetails</h2>
               
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 8px 0; color: #6b7280; width: 120px;">Buchungsnummer:</td>
-                  <td style="padding: 8px 0; font-weight: bold;">${booking.id}</td>
+                  <td style="padding: 8px 0; color: #6b7280; width: 140px; vertical-align: top;">Buchungsnummer:</td>
+                  <td style="padding: 8px 0; font-weight: bold; font-family: monospace; color: #f43f5e;">${booking.id}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; color: #6b7280;">Datum & Uhrzeit:</td>
-                  <td style="padding: 8px 0; font-weight: bold;">${bookingDate} - ${booking.time}</td>
+                  <td style="padding: 8px 0; color: #6b7280; vertical-align: top;">📅 Datum:</td>
+                  <td style="padding: 8px 0; font-weight: bold;">${bookingDate}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; color: #6b7280;">Telefonnummer:</td>
+                  <td style="padding: 8px 0; color: #6b7280; vertical-align: top;">🕐 Uhrzeit:</td>
+                  <td style="padding: 8px 0; font-weight: bold;">${booking.time} Uhr</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; vertical-align: top;">⏱️ Dauer:</td>
+                  <td style="padding: 8px 0;">ca. ${durationText}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; vertical-align: top;">📞 Kontakt:</td>
                   <td style="padding: 8px 0;">${booking.customerPhone}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; color: #6b7280;">E-Mail:</td>
-                  <td style="padding: 8px 0;">${booking.customerEmail}</td>
                 </tr>
               </table>
             </div>
             
             <div style="margin: 20px 0;">
-              <h3 style="color: #f43f5e; font-size: 18px; margin-bottom: 15px;">Ausgewählte Leistungen</h3>
+              <h3 style="color: #f43f5e; font-size: 18px; margin-bottom: 15px;">💅 Ihre ausgewählten Leistungen</h3>
               <table style="width: 100%; border-collapse: collapse;">
                 ${servicesList}
                 <tr>
-                  <td style="padding: 12px 0; border-top: 2px solid #f43f5e; font-weight: bold; font-size: 18px;">
+                  <td style="padding: 15px 0; border-top: 2px solid #f43f5e; font-weight: bold; font-size: 18px;">
                     Gesamtpreis
                   </td>
-                  <td style="padding: 12px 0; border-top: 2px solid #f43f5e; text-align: right; font-weight: bold; font-size: 18px; color: #f43f5e;">
-                    €${booking.totalPrice}
+                  <td style="padding: 15px 0; border-top: 2px solid #f43f5e; text-align: right; font-weight: bold; font-size: 20px; color: #f43f5e;">
+                    €${booking.totalPrice.toFixed(2)}
                   </td>
                 </tr>
               </table>
@@ -104,20 +124,22 @@ export async function sendBookingConfirmationEmail(booking: Booking) {
             
             ${booking.notes ? `
               <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-                <strong style="color: #92400e;">Notizen:</strong>
-                <p style="margin: 5px 0 0 0; color: #78350f;">${booking.notes}</p>
+                <strong style="color: #92400e; display: block; margin-bottom: 8px;">📝 Ihre Notizen:</strong>
+                <p style="margin: 0; color: #78350f; white-space: pre-wrap;">${booking.notes}</p>
               </div>
             ` : ''}
             
             <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-              <p style="margin: 0; color: #1e40af;">
-                <strong>Hinweis:</strong> Dies ist eine automatische Bestätigungs-E-Mail. Wir werden uns innerhalb von 24 Stunden bei Ihnen melden, um Ihren Termin zu bestätigen.
+              <p style="margin: 0; color: #1e40af; line-height: 1.6;">
+                <strong>ℹ️ Wichtiger Hinweis:</strong><br>
+                Dies ist eine automatische Bestätigungs-E-Mail. Wir werden uns innerhalb von 24 Stunden telefonisch oder per E-Mail bei Ihnen melden, um Ihren Termin zu bestätigen. Bitte behalten Sie Ihre Buchungsnummer <strong>${booking.id}</strong> für Ihre Unterlagen.
               </p>
             </div>
             
-            <p style="font-size: 16px; margin-top: 30px;">
+            <p style="font-size: 16px; margin-top: 30px; line-height: 1.8;">
+              Wir freuen uns auf Ihren Besuch!<br><br>
               Mit freundlichen Grüßen,<br>
-              <strong>Das Team von AMICI NAILS SALON</strong>
+              <strong style="color: #f43f5e;">Das Team von AMICI NAILS SALON</strong>
             </p>
           </div>
           
@@ -129,26 +151,32 @@ export async function sendBookingConfirmationEmail(booking: Booking) {
     `
 
     const emailText = `
-AMICI NAILS SALON - Terminbestätigung Erfolgreich
+AMICI NAILS SALON - Terminbestätigung
 
-Hallo ${booking.customerName},
+Sehr geehrte/r ${booking.customerName},
 
-Vielen Dank für Ihre Terminbuchung bei AMICI NAILS SALON! Wir haben Ihre Buchungsanfrage erhalten und werden uns schnellstmöglich bei Ihnen melden, um Ihren Termin zu bestätigen.
+vielen Dank für Ihre Terminbuchung bei AMICI NAILS SALON! Wir haben Ihre Buchungsanfrage erhalten und werden uns innerhalb der nächsten 24 Stunden bei Ihnen melden, um Ihren Termin zu bestätigen.
 
 BUCHUNGSINFORMATIONEN:
-- Buchungsnummer: ${booking.id}
-- Datum & Uhrzeit: ${bookingDate} - ${booking.time}
-- Telefonnummer: ${booking.customerPhone}
-- E-Mail: ${booking.customerEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Buchungsnummer: ${booking.id}
+Datum: ${bookingDate}
+Uhrzeit: ${booking.time} Uhr
+Dauer: ca. ${durationText}
+Kontakt: ${booking.customerPhone}
 
-AUSGEWÄHLTE LEISTUNGEN:
-${booking.services.map(s => `- ${s.nameDe || s.name}: €${s.price}`).join('\n')}
+Ihre ausgewählten Leistungen:
+${booking.services.map(s => `  • ${s.nameDe || s.name}: €${s.price.toFixed(2)}`).join('\n')}
 
-Gesamtpreis: €${booking.totalPrice}
+Gesamtpreis: €${booking.totalPrice.toFixed(2)}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${booking.notes ? `Notizen: ${booking.notes}\n` : ''}
+${booking.notes ? `Ihre Notizen:\n${booking.notes}\n\n` : ''}
 
-Hinweis: Dies ist eine automatische Bestätigungs-E-Mail. Wir werden uns innerhalb von 24 Stunden bei Ihnen melden, um Ihren Termin zu bestätigen.
+Wichtiger Hinweis:
+Dies ist eine automatische Bestätigungs-E-Mail. Wir werden uns innerhalb von 24 Stunden telefonisch oder per E-Mail bei Ihnen melden, um Ihren Termin zu bestätigen. Bitte behalten Sie Ihre Buchungsnummer ${booking.id} für Ihre Unterlagen.
+
+Wir freuen uns auf Ihren Besuch!
 
 Mit freundlichen Grüßen,
 Das Team von AMICI NAILS SALON
@@ -160,7 +188,7 @@ Das Team von AMICI NAILS SALON
     const result = await resend.emails.send({
       from: fromEmail,
       to: booking.customerEmail,
-      subject: `AMICI NAILS SALON - Terminbestätigung - ${booking.id}`,
+      subject: `Terminbestätigung - ${booking.id} | AMICI NAILS SALON`,
       html: emailHtml,
       text: emailText,
     })

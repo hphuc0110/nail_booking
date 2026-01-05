@@ -383,6 +383,17 @@ export const serviceCategories: ServiceCategory[] = [
         categoryVi: "DỊCH VỤ KHÁC",
         categoryDe: "SONSTIGES",
       },
+      {
+        id: "chrom",
+        name: "Chrom | Cat Eye",
+        nameVi: "Chrom | Mắt mèo",
+        nameDe: "Chrom | Cat Eye  ",
+        price: 15,
+        duration: 45,
+        category: "OTHERS",
+        categoryVi: "DỊCH VỤ KHÁC",  
+        categoryDe: "SONSTIGES",
+      },
     ],
   },
 ]
@@ -410,7 +421,7 @@ export const galleryImages = [
 
 export const contactInfo = {
   name: "Amici Nail Salon",
-  address: "Kapellen Str 11, Rastatt , Germany",
+  address: "Kapellen Str 11, 76437 Rastatt , Germany",
   email: "phuonglinhdang89@gmail.com",
   phone: "0722 21656351 / 0176 43299127",
   instagram: "https://www.instagram.com/amici_nailsalon/",

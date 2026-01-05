@@ -152,6 +152,79 @@ export async function getBookingById(id: string): Promise<Booking | null> {
   }
 }
 
+/**
+ * Generate a short booking ID (e.g., BK-A1B2)
+ */
 export function generateId(): string {
-  return `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase() // 4 random chars
+  return `BK-${randomStr}`
+}
+
+// GET - Kiểm tra khả dụng của khung giờ
+export async function checkTimeSlotAvailability(date: string, time: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/bookings/check-availability?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+    
+    if (!response.ok) {
+      return false
+    }
+    
+    const data = await response.json()
+    return data.available !== false
+  } catch (error) {
+    console.error("Error checking time slot availability:", error)
+    return false
+  }
+}
+
+// GET - Lấy số lượng booking theo từng khung giờ trong ngày
+export async function getTimeSlotCounts(date: string): Promise<Record<string, number>> {
+  try {
+    const response = await fetch(`/api/bookings/check-availability?date=${encodeURIComponent(date)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+    
+    if (!response.ok) {
+      return {}
+    }
+    
+    const data = await response.json()
+    return data.timeSlotCounts || {}
+  } catch (error) {
+    console.error("Error fetching time slot counts:", error)
+    return {}
+  }
+}
+
+// GET - Lấy số lượng booking cho một khung giờ cụ thể
+export async function getTimeSlotBookingCount(date: string, time: string): Promise<number> {
+  try {
+    const response = await fetch(`/api/bookings/check-availability?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+    
+    if (!response.ok) {
+      return 0
+    }
+    
+    const data = await response.json()
+    return data.bookingCount || 0
+  } catch (error) {
+    console.error("Error fetching time slot booking count:", error)
+    return 0
+  }
 }

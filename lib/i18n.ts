@@ -102,6 +102,12 @@ export const translations = {
     english: "English",
     vietnamese: "Vietnamese",
     german: "German",
+    
+    // Booking validation
+    timeSlotBooked: "This time slot is already booked",
+    timeSlotAlreadyBooked: "This time slot has already been booked. Please select another time.",
+    dateLocked: "Booking is not available for this date.",
+    saving: "Saving...",
   },
   vi: {
     // Header & Navigation
@@ -204,6 +210,12 @@ export const translations = {
     english: "Tiếng Anh",
     vietnamese: "Tiếng Việt",
     german: "Tiếng Đức",
+    
+    // Booking validation
+    timeSlotBooked: "Khung giờ này đã được đặt",
+    timeSlotAlreadyBooked: "Khung giờ này đã được đặt. Vui lòng chọn khung giờ khác.",
+    dateLocked: "Không thể đặt lịch cho ngày này.",
+    saving: "Đang lưu...",
   },
   de: {
     // Header & Navigation
@@ -288,6 +300,7 @@ export const translations = {
     today: "Heute",
     bookingsByDate: "Buchungen nach Datum",
     noBookingsForDate: "Keine Buchungen für dieses Datum",
+    tomorrow: "Morgen",
 
     // Login
     login: "Anmelden",
@@ -306,6 +319,40 @@ export const translations = {
     english: "Englisch",
     vietnamese: "Vietnamesisch",
     german: "Deutsch",
+    
+    // Booking validation
+    timeSlotBooked: "Dieser Zeitraum ist bereits gebucht",
+    timeSlotLocked: "Dieser Zeitraum ist gesperrt",
+    timeSlotAlreadyBooked: "Dieser Zeitraum ist bereits gebucht. Bitte wählen Sie eine andere Zeit.",
+    dateLocked: "Buchungen sind für dieses Datum nicht verfügbar.",
+    saving: "Speichern...",
+    bookings: "Buchungen",
+    
+    // Locked dates management
+    manageLockedDates: "Gesperrte Termine verwalten",
+    lockDate: "Datum sperren",
+    unlockDate: "Datum entsperren",
+    lockedDates: "Gesperrte Termine",
+    reason: "Grund",
+    addLockedDate: "Datum sperren",
+    removeLockedDate: "Sperre aufheben",
+    dateLockedSuccess: "Datum erfolgreich gesperrt",
+    dateUnlockedSuccess: "Sperre erfolgreich aufgehoben",
+    selectDateToLock: "Wählen Sie ein Datum zum Sperren",
+    noLockedDates: "Keine gesperrten Termine",
+    deleteBookingFailed: "Fehler beim Löschen der Buchung. Bitte versuchen Sie es erneut.",
+    locked: "Gesperrt",
+    lockTimeSlot: "Zeitslot sperren",
+    unlockTimeSlot: "Zeitslot entsperren",
+    timeSlotManagement: "Zeitslot-Verwaltung",
+    viewBookingCounts: "Buchungsanzahl anzeigen",
+    unlock: "Entsperren",
+    lock: "Sperren",
+    available: "Verfügbar",
+    hasBookings: "Hat Buchungen",
+    manageTimeSlots: "Zeitslots verwalten",
+    timeSlots: "Zeitslots",
+    lockDates: "Tage",
   },
 }
 

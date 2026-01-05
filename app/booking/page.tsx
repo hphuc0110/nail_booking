@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useLanguage } from "@/components/language-context"
 import { t } from "@/lib/i18n"
 import { serviceCategories } from "@/lib/data"
 import { saveBooking, generateId } from "@/lib/booking-store"
+import { getLockedDates } from "@/lib/locked-dates-store"
+import { getLockedTimeSlots } from "@/lib/locked-time-slots-store"
+import { getTodayGMT1, formatDateGMT1, formatCalendarDateGMT1, isTodayGMT1, isPastGMT1, isTimeSlotPassedGMT1, createDateTimeGMT1 } from "@/lib/timezone"
 import type { Service, Booking } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,6 +81,8 @@ export default function BookingPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string>("")
+  const [lockedDates, setLockedDates] = useState<string[]>([])
+  const [lockedTimeSlots, setLockedTimeSlots] = useState<Set<string>>(new Set())
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -90,7 +95,7 @@ export default function BookingPage() {
         customerPhone: customerInfo.phone,
         customerEmail: customerInfo.email,
         services: selectedServices,
-        date: selectedDate?.toISOString().split("T")[0] || "",
+        date: selectedDate ? formatDateGMT1(selectedDate) : "",
         time: selectedTime,
         notes: customerInfo.notes,
         status: "pending",
@@ -102,39 +107,66 @@ export default function BookingPage() {
       const result = await saveBooking(booking)
       if (result) {
         setBookingComplete(true)
+        // Refresh locked time slots after successful booking
+        if (selectedDate) {
+          const dateStr = formatDateGMT1(selectedDate)
+          const locked = await getLockedTimeSlots(dateStr)
+          const lockedSet = new Set(locked.map(lt => `${lt.date}-${lt.time}`))
+          setLockedTimeSlots(lockedSet)
+        }
       } else {
         setSubmitError("Failed to save booking. Please try again.")
       }
     } catch (error: any) {
       console.error("Booking submission error:", error)
-      const errorMessage = error?.message || error?.toString() || "Failed to save booking. Please try again."
+      let errorMessage = error?.message || error?.toString() || "Failed to save booking. Please try again."
+      
+      // Handle specific error messages
+      if (errorMessage.includes("Time slot is locked") || errorMessage.includes("currently locked")) {
+        errorMessage = t("timeSlotLocked", lang) || "This time slot is currently locked. Please select another time."
+      } else if (errorMessage.includes("Date is locked") || errorMessage.includes("not available for this date")) {
+        errorMessage = t("dateLocked", lang) || "Booking is not available for this date."
+      }
+      
       setSubmitError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Helper function to check if a date is today (only compare date, not time)
+  // Helper function to check if a date is today in GMT+1
   const isToday = (date: Date): boolean => {
-    const today = new Date()
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    )
+    return isTodayGMT1(date)
   }
 
-  // Helper function to check if a time slot has passed today
+  // Helper function to check if a time slot has passed today in GMT+1
   const isTimeSlotPassed = (time: string): boolean => {
-    if (!selectedDate || !isToday(selectedDate)) {
-      return false
-    }
-    const now = new Date()
-    const [hours, minutes] = time.split(':').map(Number)
-    const slotTime = new Date()
-    slotTime.setHours(hours, minutes, 0, 0)
-    return slotTime <= now
+    return isTimeSlotPassedGMT1(time, selectedDate)
   }
+
+  // Load locked time slots when date changes
+  useEffect(() => {
+    const loadLockedTimeSlots = async () => {
+      if (selectedDate) {
+        const dateStr = formatDateGMT1(selectedDate)
+        const locked = await getLockedTimeSlots(dateStr)
+        const lockedSet = new Set(locked.map(lt => `${lt.date}-${lt.time}`))
+        setLockedTimeSlots(lockedSet)
+      } else {
+        setLockedTimeSlots(new Set())
+      }
+    }
+    loadLockedTimeSlots()
+  }, [selectedDate])
+
+  // Load locked dates on mount
+  useEffect(() => {
+    const loadLockedDates = async () => {
+      const locked = await getLockedDates()
+      setLockedDates(locked.map(ld => ld.date))
+    }
+    loadLockedDates()
+  }, [])
 
   // Reset selected time when date changes
   const handleDateSelect = (date: Date | undefined) => {
@@ -283,12 +315,16 @@ export default function BookingPage() {
                         selected={selectedDate}
                         onSelect={handleDateSelect}
                         disabled={(date) => {
-                          const today = new Date()
-                          today.setHours(0, 0, 0, 0)
-                          const compareDate = new Date(date)
-                          compareDate.setHours(0, 0, 0, 0)
-                          // Disable only if date is in the past (allow Sunday and today)
-                          return compareDate < today
+                          // Calendar component passes date at midnight in local timezone
+                          // We need to format it correctly in GMT+1
+                          const todayStr = getTodayGMT1()
+                          const dateStr = formatCalendarDateGMT1(date)
+                          
+                          // Disable if date is strictly before today (not today itself) or if it's locked
+                          const isPast = dateStr < todayStr
+                          const isLocked = lockedDates.includes(dateStr)
+                          
+                          return isPast || isLocked
                         }}
                         className="rounded-md border mx-auto w-full"
                       />
@@ -302,12 +338,16 @@ export default function BookingPage() {
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5 sm:gap-2 max-h-[300px] sm:max-h-none overflow-y-auto">
                       {timeSlots.map((time) => {
                         const isPassed = isTimeSlotPassed(time)
-                        const isDisabled = isPassed
+                        const dateStr = selectedDate ? formatDateGMT1(selectedDate) : ""
+                        const isLocked = dateStr ? lockedTimeSlots.has(`${dateStr}-${time}`) : false
+                        const isDisabled = isPassed || isLocked
+                        
                         return (
                           <button
                             key={time}
                             onClick={() => !isDisabled && setSelectedTime(time)}
                             disabled={isDisabled}
+                            title={isLocked ? t("timeSlotLocked", lang) || "This time slot is locked" : ""}
                             className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${
                               isDisabled
                                 ? "bg-gray-50 text-gray-400 cursor-not-allowed"
@@ -438,7 +478,9 @@ export default function BookingPage() {
               {selectedDate && (
                 <div className="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs md:text-sm text-gray-600 mb-2">
                   <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0 mt-0.5" />
-                  <span className="break-words">{selectedDate.toLocaleDateString()} {selectedTime && `- ${selectedTime}`}</span>
+                  <span className="break-words">
+                    {formatDateGMT1(selectedDate)} {selectedTime && `- ${selectedTime}`}
+                  </span>
                 </div>
               )}
 

@@ -41,8 +41,39 @@ export async function POST(request: NextRequest) {
     console.log('Attempting to connect to database...')
     const db = await getDb()
     console.log('Database connected successfully')
-    
-    console.log('Attempting to insert booking...')
+
+    // Kiểm tra xem ngày có bị khóa không
+    const lockedDate = await db.collection('locked_dates').findOne({
+      date: booking.date
+    })
+
+    if (lockedDate) {
+      return NextResponse.json(
+        { 
+          error: 'Date is locked',
+          message: 'Booking is not available for this date'
+        },
+        { status: 403 }
+      )
+    }
+
+    // Kiểm tra xem khung giờ cụ thể có bị khóa không
+    if (booking.date && booking.time) {
+      const lockedTimeSlot = await db.collection('locked_time_slots').findOne({
+        date: booking.date,
+        time: booking.time
+      })
+
+      if (lockedTimeSlot) {
+        return NextResponse.json(
+          { 
+            error: 'Time slot is locked',
+            message: 'This time slot is currently locked and not available for booking'
+          },
+          { status: 403 }
+        )
+      }
+    }
     const result = await db.collection<Booking>('bookings').insertOne(booking)
     console.log('Insert result:', result)
     
