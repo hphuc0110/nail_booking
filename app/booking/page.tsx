@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
 import { ChevronDown, ChevronUp, Check, Clock, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import PushNotificationManager from "@/components/push-notification"
 
 const timeSlots = [
   "09:00",
@@ -87,7 +88,7 @@ export default function BookingPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     setSubmitError("")
-    
+
     try {
       const booking: Booking = {
         id: generateId(),
@@ -120,14 +121,14 @@ export default function BookingPage() {
     } catch (error: any) {
       console.error("Booking submission error:", error)
       let errorMessage = error?.message || error?.toString() || "Failed to save booking. Please try again."
-      
+
       // Handle specific error messages
       if (errorMessage.includes("Time slot is locked") || errorMessage.includes("currently locked")) {
         errorMessage = t("timeSlotLocked", lang) || "This time slot is currently locked. Please select another time."
       } else if (errorMessage.includes("Date is locked") || errorMessage.includes("not available for this date")) {
         errorMessage = t("dateLocked", lang) || "Booking is not available for this date."
       }
-      
+
       setSubmitError(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -200,6 +201,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8">
+      <PushNotificationManager />
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center gap-2 text-sm sm:text-base text-gray-600 hover:text-rose-600 mb-4 sm:mb-6">
@@ -214,9 +216,8 @@ export default function BookingPage() {
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <div
-                className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm md:text-base ${
-                  step >= s ? "bg-rose-500 text-white" : "bg-gray-200 text-gray-500"
-                }`}
+                className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm md:text-base ${step >= s ? "bg-rose-500 text-white" : "bg-gray-200 text-gray-500"
+                  }`}
               >
                 {s}
               </div>
@@ -261,9 +262,8 @@ export default function BookingPage() {
                           return (
                             <label
                               key={service.id}
-                              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg cursor-pointer transition-colors ${
-                                isSelected ? "bg-rose-50 border border-rose-200" : "bg-gray-50 hover:bg-gray-100"
-                              }`}
+                              className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg cursor-pointer transition-colors ${isSelected ? "bg-rose-50 border border-rose-200" : "bg-gray-50 hover:bg-gray-100"
+                                }`}
                             >
                               <div className="flex items-center gap-2 sm:gap-3 flex-1">
                                 <Checkbox checked={isSelected} onCheckedChange={() => toggleService(service)} />
@@ -319,11 +319,11 @@ export default function BookingPage() {
                           // We need to format it correctly in GMT+1
                           const todayStr = getTodayGMT1()
                           const dateStr = formatCalendarDateGMT1(date)
-                          
+
                           // Disable if date is strictly before today (not today itself) or if it's locked
                           const isPast = dateStr < todayStr
                           const isLocked = lockedDates.includes(dateStr)
-                          
+
                           return isPast || isLocked
                         }}
                         className="rounded-md border mx-auto w-full"
@@ -341,20 +341,19 @@ export default function BookingPage() {
                         const dateStr = selectedDate ? formatDateGMT1(selectedDate) : ""
                         const isLocked = dateStr ? lockedTimeSlots.has(`${dateStr}-${time}`) : false
                         const isDisabled = isPassed || isLocked
-                        
+
                         return (
                           <button
                             key={time}
                             onClick={() => !isDisabled && setSelectedTime(time)}
                             disabled={isDisabled}
                             title={isLocked ? t("timeSlotLocked", lang) || "This time slot is locked" : ""}
-                            className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${
-                              isDisabled
+                            className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${isDisabled
                                 ? "bg-gray-50 text-gray-400 cursor-not-allowed"
                                 : selectedTime === time
-                                ? "bg-rose-500 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
+                                  ? "bg-rose-500 text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              }`}
                           >
                             {time}
                           </button>
@@ -433,7 +432,7 @@ export default function BookingPage() {
                       rows={3}
                     />
                   </div>
-                  
+
                   {submitError && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-sm text-red-600">{submitError}</p>
