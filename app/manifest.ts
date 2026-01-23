@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     "name": "Nail Booking",
     "short_name": "Nail Booking",
-    "start_url": "/",
+    "start_url": "/admin",
     "display": "standalone",
     "theme_color": "#000000",
     "background_color": "#000000",
