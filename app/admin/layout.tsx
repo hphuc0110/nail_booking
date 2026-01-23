@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { isAuthenticated } from "@/lib/auth"
 import { Toaster } from "@/components/ui/toaster"
+import { getPushNotificationPlugin } from "@/lib/push-notification-plugin"
 import type React from "react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.push("/admin/login")
     } else {
       setIsChecking(false)
+      // Initialize push notification plugin only for authenticated admin users
+      getPushNotificationPlugin().init()
     }
   }, [router, pathname])
 

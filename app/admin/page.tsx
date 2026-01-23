@@ -33,7 +33,7 @@ import { format } from "date-fns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { sendPushNotification } from "@/lib/push-notification-plugin"
-// Push notification plugin is initialized globally in app/layout.tsx
+// Push notification plugin is initialized in app/admin/layout.tsx for admin users only
 
 type StatusFilter = "all" | "pending" | "confirmed" | "completed" | "cancelled"
 
@@ -75,17 +75,9 @@ export default function AdminPage() {
     loadLockedDates()
     loadLockedTimeSlots()
 
-    // Kiểm tra và yêu cầu quyền thông báo
+    // Kiểm tra quyền thông báo
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission)
-      if (Notification.permission === "default") {
-        // Tự động yêu cầu quyền sau 2 giây
-        setTimeout(() => {
-          Notification.requestPermission().then((permission) => {
-            setNotificationPermission(permission)
-          })
-        }, 2000)
-      }
     }
   }, [])
 
@@ -120,6 +112,16 @@ export default function AdminPage() {
                 requireInteraction: false,
               })
             })
+          }
+
+          // Send push notification for each new booking
+          for (const booking of newBookingsList) {
+            try {
+              const message = `🔔 Neue Buchung erhalten!\n${booking.customerName} - ${booking.date} um ${booking.time} Uhr\n€${booking.totalPrice.toFixed(2)}`
+              await sendPushNotification(message)
+            } catch (error) {
+              console.error("Error sending push notification:", error)
+            }
           }
 
           // Hiển thị toast notification
@@ -347,6 +349,19 @@ export default function AdminPage() {
     await sendPushNotification("Test notification")
   }
 
+  const handleRequestNotificationPermission = async () => {
+    if ("Notification" in window && Notification.permission === "default") {
+      const permission = await Notification.requestPermission()
+      setNotificationPermission(permission)
+      if (permission === "granted") {
+        toast({
+          title: "✅ Benachrichtigungen aktiviert",
+          description: "Sie erhalten jetzt Benachrichtigungen für neue Buchungen.",
+        })
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -506,6 +521,32 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        {/* Notification Permission Alert */}
+        {notificationPermission !== "granted" && "Notification" in window && (
+          <Alert className="mb-4 sm:mb-6 border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-900">Benachrichtigungen aktivieren</AlertTitle>
+            <AlertDescription className="text-amber-800 mt-2">
+              {notificationPermission === "default" ? (
+                <>
+                  Aktivieren Sie Benachrichtigungen, um sofort über neue Buchungen informiert zu werden.
+                  <Button
+                    onClick={handleRequestNotificationPermission}
+                    className="mt-2 bg-amber-600 hover:bg-amber-700 text-white"
+                    size="sm"
+                  >
+                    Benachrichtigungen aktivieren
+                  </Button>
+                </>
+              ) : (
+                <>
+                  Benachrichtigungen wurden blockiert. Bitte aktivieren Sie sie in Ihren Browser-Einstellungen.
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-8">
           {(["all", "pending", "confirmed", "completed", "cancelled"] as const).map((status) => (

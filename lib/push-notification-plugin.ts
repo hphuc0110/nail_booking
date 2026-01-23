@@ -1,20 +1,21 @@
 /**
  * Push Notification Plugin
  * 
- * This plugin automatically registers a service worker and subscribes to push notifications.
+ * This plugin registers a service worker and subscribes to push notifications.
  * It runs in the background without any UI components.
  * 
  * Usage:
- * 1. Import the plugin in any page/component to auto-initialize:
- *    import "@/lib/push-notification-plugin"
+ * 1. Initialize the plugin (typically in admin layout):
+ *    import { getPushNotificationPlugin } from "@/lib/push-notification-plugin"
+ *    getPushNotificationPlugin().init()
  * 
  * 2. Send a notification from anywhere:
  *    import { sendPushNotification } from "@/lib/push-notification-plugin"
  *    await sendPushNotification("Your message here")
  * 
  * The plugin will:
- * - Automatically register the service worker
- * - Automatically subscribe to push notifications
+ * - Register the service worker
+ * - Subscribe to push notifications
  * - Periodically check and re-sync subscription status
  * - Handle service worker updates
  */
@@ -226,19 +227,6 @@ class PushNotificationPlugin {
 
 // Create singleton instance
 const pushNotificationPlugin = new PushNotificationPlugin()
-
-// Auto-initialize when module is loaded (client-side only)
-if (typeof window !== 'undefined') {
-    // Initialize after a short delay to ensure page is loaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            pushNotificationPlugin.init()
-        })
-    } else {
-        // DOM already loaded
-        pushNotificationPlugin.init()
-    }
-}
 
 /**
  * Send a push notification message
