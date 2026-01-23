@@ -32,6 +32,8 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
+import { sendPushNotification } from "@/lib/push-notification-plugin"
+// Push notification plugin is initialized globally in app/layout.tsx
 
 type StatusFilter = "all" | "pending" | "confirmed" | "completed" | "cancelled"
 
@@ -72,7 +74,7 @@ export default function AdminPage() {
     loadBookings()
     loadLockedDates()
     loadLockedTimeSlots()
-    
+
     // Kiểm tra và yêu cầu quyền thông báo
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission)
@@ -91,22 +93,22 @@ export default function AdminPage() {
   useEffect(() => {
     // Chỉ bắt đầu polling sau khi đã load bookings lần đầu
     if (lastBookingCount === 0) return
-    
+
     const checkNewBookings = async () => {
       try {
         const data = await getBookings()
         const currentCount = data.length
-        
+
         // Kiểm tra nếu có booking mới
         if (currentCount > lastBookingCount) {
           // Lấy các booking mới nhất
           const sortedBookings = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           const newBookingsList = sortedBookings.slice(0, currentCount - lastBookingCount)
-          
+
           // Thêm vào danh sách thông báo
           setNewBookings(prev => [...newBookingsList, ...prev])
           setUnreadNotifications(prev => prev + newBookingsList.length)
-          
+
           // Hiển thị browser push notification
           if ("Notification" in window && Notification.permission === "granted") {
             newBookingsList.forEach((booking) => {
@@ -119,13 +121,13 @@ export default function AdminPage() {
               })
             })
           }
-          
+
           // Hiển thị toast notification
           toast({
             title: "🔔 Neue Buchung erhalten!",
             description: `${newBookingsList.length} neue Buchung${newBookingsList.length > 1 ? 'en' : ''} wurde${newBookingsList.length > 1 ? 'n' : ''} hinzugefügt.`,
           })
-          
+
           // Tự động reload bookings
           await loadBookings()
           setLastBookingCount(currentCount)
@@ -137,7 +139,7 @@ export default function AdminPage() {
 
     // Kiểm tra mỗi 10 giây
     const interval = setInterval(checkNewBookings, 10000)
-    
+
     return () => clearInterval(interval)
   }, [lastBookingCount, toast])
 
@@ -146,15 +148,15 @@ export default function AdminPage() {
     const loadTimeSlotCounts = async () => {
       const dates = [...new Set(bookings.map(b => b.date))]
       const counts: Record<string, Record<string, number>> = {}
-      
+
       for (const date of dates) {
         const dateCounts = await getTimeSlotCounts(date)
         counts[date] = dateCounts
       }
-      
+
       setTimeSlotCounts(counts)
     }
-    
+
     if (bookings.length > 0) {
       loadTimeSlotCounts()
     }
@@ -164,7 +166,7 @@ export default function AdminPage() {
     const data = await getBookings()
     const sortedBookings = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     setBookings(sortedBookings)
-    
+
     // Cập nhật lastBookingCount khi load lần đầu
     if (lastBookingCount === 0) {
       setLastBookingCount(data.length)
@@ -211,7 +213,7 @@ export default function AdminPage() {
 
   const handleAddLockedDate = async () => {
     if (!dateToLock) return
-    
+
     const dateStr = format(dateToLock, "yyyy-MM-dd")
     const result = await addLockedDate(dateStr, lockReason)
     if (result) {
@@ -235,7 +237,7 @@ export default function AdminPage() {
       booking.customerPhone.includes(searchQuery) ||
       booking.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter
-    
+
     // Filter by date if selected
     if (selectedDate) {
       const selectedDateStr = format(selectedDate, "yyyy-MM-dd")
@@ -243,7 +245,7 @@ export default function AdminPage() {
         return false
       }
     }
-    
+
     return matchesSearch && matchesStatus
   })
 
@@ -266,13 +268,13 @@ export default function AdminPage() {
     // Parse date string as GMT+1 date
     const [year, month, day] = dateStr.split('-').map(Number)
     const date = new Date(Date.UTC(year, month - 1, day))
-    
+
     const todayStr = getTodayGMT1()
     const today = parseDateGMT1(todayStr)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
     const tomorrowStr = formatDateGMT1(tomorrow)
-    
+
     if (dateStr === todayStr) {
       return `${t("today", lang)} - ${format(date, "dd.MM.yyyy")}`
     } else if (dateStr === tomorrowStr) {
@@ -341,6 +343,10 @@ export default function AdminPage() {
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   }
 
+  const handleSendTestNotification = async () => {
+    await sendPushNotification("Test notification")
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -351,7 +357,7 @@ export default function AdminPage() {
               <Link href="/" className="text-gray-600 hover:text-rose-600 flex-shrink-0">
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{t("adminPanel", lang)}</h1>
+              <h1 onClick={handleSendTestNotification} className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{t("adminPanel", lang)}</h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* Notification Bell */}
@@ -420,7 +426,7 @@ export default function AdminPage() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               {/* Action Buttons */}
               <div className="hidden sm:flex items-center gap-2">
                 <Button
@@ -506,9 +512,8 @@ export default function AdminPage() {
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`p-2 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all ${
-                statusFilter === status ? "bg-rose-500 text-white shadow-lg" : "bg-white text-gray-900 hover:shadow-md"
-              }`}
+              className={`p-2 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all ${statusFilter === status ? "bg-rose-500 text-white shadow-lg" : "bg-white text-gray-900 hover:shadow-md"
+                }`}
             >
               <p className="text-lg sm:text-2xl font-bold">{statusCounts[status]}</p>
               <p className={`text-xs sm:text-sm ${statusFilter === status ? "text-rose-100" : "text-gray-500"}`}>
@@ -553,9 +558,8 @@ export default function AdminPage() {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className={`flex-1 sm:flex-none sm:w-[200px] md:w-[280px] justify-start text-left font-normal text-xs sm:text-sm ${
-                        !selectedDate && "text-muted-foreground"
-                      }`}
+                      className={`flex-1 sm:flex-none sm:w-[200px] md:w-[280px] justify-start text-left font-normal text-xs sm:text-sm ${!selectedDate && "text-muted-foreground"
+                        }`}
                     >
                       <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       {selectedDate ? format(selectedDate, "dd.MM.yyyy") : t("allDates", lang)}
@@ -611,34 +615,32 @@ export default function AdminPage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"].map((time) => {
                 const dateStr = formatDateGMT1(selectedDate)
                 const bookingCount = getTimeSlotBookingCount(dateStr, time)
                 const isLocked = isTimeSlotLocked(dateStr, time)
-                
+
                 return (
                   <div
                     key={time}
-                    className={`p-3 rounded-lg border-2 transition-all min-w-0 ${
-                      isLocked
-                        ? "bg-red-50 border-red-300"
-                        : bookingCount > 0
+                    className={`p-3 rounded-lg border-2 transition-all min-w-0 ${isLocked
+                      ? "bg-red-50 border-red-300"
+                      : bookingCount > 0
                         ? "bg-amber-50 border-amber-300"
                         : "bg-gray-50 border-gray-200"
-                    }`}
+                      }`}
                   >
                     <div className="text-center">
                       <p className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 truncate">{time}</p>
                       <div className="flex items-center justify-center gap-1 mb-2">
-                        <span className={`text-xl sm:text-2xl font-bold ${
-                          isLocked
-                            ? "text-red-600"
-                            : bookingCount > 0
+                        <span className={`text-xl sm:text-2xl font-bold ${isLocked
+                          ? "text-red-600"
+                          : bookingCount > 0
                             ? "text-amber-600"
                             : "text-gray-400"
-                        }`}>
+                          }`}>
                           {bookingCount}
                         </span>
                         {isLocked && (
@@ -659,11 +661,10 @@ export default function AdminPage() {
                         ) : (
                           <Button
                             size="sm"
-                            className={`w-full text-[10px] sm:text-xs h-7 sm:h-8 px-1 sm:px-2 ${
-                              bookingCount > 0
-                                ? "bg-amber-500 hover:bg-amber-600 text-white"
-                                : "bg-gray-500 hover:bg-gray-600 text-white"
-                            }`}
+                            className={`w-full text-[10px] sm:text-xs h-7 sm:h-8 px-1 sm:px-2 ${bookingCount > 0
+                              ? "bg-amber-500 hover:bg-amber-600 text-white"
+                              : "bg-gray-500 hover:bg-gray-600 text-white"
+                              }`}
                             onClick={() => handleLockTimeSlot(dateStr, time)}
                           >
                             <Lock className="w-3 h-3 mr-1 flex-shrink-0" />
@@ -676,7 +677,7 @@ export default function AdminPage() {
                 )
               })}
             </div>
-            
+
             <div className="mt-6 flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm border-t pt-4">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-50 border-2 border-gray-200 rounded flex-shrink-0"></div>
@@ -711,7 +712,7 @@ export default function AdminPage() {
                     {bookingsByDate[date].length} {t("allBookings", lang).toLowerCase()}
                   </p>
                 </div>
-                
+
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
@@ -1112,9 +1113,8 @@ export default function AdminPage() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`w-full justify-start text-left font-normal ${
-                      !dateToLock && "text-muted-foreground"
-                    }`}
+                    className={`w-full justify-start text-left font-normal ${!dateToLock && "text-muted-foreground"
+                      }`}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {dateToLock ? format(dateToLock, "dd.MM.yyyy") : t("selectDate", lang)}

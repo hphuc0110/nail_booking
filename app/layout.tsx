@@ -6,6 +6,7 @@ import "./globals.css"
 import { LanguageProvider } from "@/components/language-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import PushNotificationInit from "@/components/push-notification-init"
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -39,6 +40,7 @@ export default function RootLayout({
 
       <body className="font-sans antialiased bg-white text-gray-900">
         <LanguageProvider>
+          <PushNotificationInit />
           <Header />
           {children}
           <Footer />

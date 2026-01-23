@@ -17,7 +17,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
 import { ChevronDown, ChevronUp, Check, Clock, ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import PushNotificationManager from "@/components/push-notification"
 
 const timeSlots = [
   "09:00",
@@ -201,7 +200,6 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8">
-      <PushNotificationManager />
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center gap-2 text-sm sm:text-base text-gray-600 hover:text-rose-600 mb-4 sm:mb-6">
@@ -349,10 +347,10 @@ export default function BookingPage() {
                             disabled={isDisabled}
                             title={isLocked ? t("timeSlotLocked", lang) || "This time slot is locked" : ""}
                             className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${isDisabled
-                                ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                                : selectedTime === time
-                                  ? "bg-rose-500 text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                              : selectedTime === time
+                                ? "bg-rose-500 text-white"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               }`}
                           >
                             {time}

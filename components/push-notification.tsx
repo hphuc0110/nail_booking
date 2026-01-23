@@ -31,7 +31,6 @@ export default function PushNotificationManager() {
   }, [subscription])
 
   useEffect(() => {
-    console.log('serviceWorker' in navigator, 'PushManager' in window)
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       registerServiceWorker()
