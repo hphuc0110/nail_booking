@@ -30,6 +30,7 @@ export async function subscribeUser(sub: PushSubscription) {
     // Serialize the subscription to ensure all properties are captured
     const subscriptionData = {
       endpoint: sub.endpoint,
+      role: 'admin',
       keys: (sub as any).keys || null,
       subscription: JSON.parse(JSON.stringify(sub)), // Full serialized subscription
       createdAt: new Date(),
@@ -101,8 +102,8 @@ export async function cleanupInvalidSubscriptions() {
       } catch (error: any) {
         // If we get a 403, 404, or 410, the subscription is invalid
         if (error?.statusCode === 403 || error?.statusCode === 404 || error?.statusCode === 410) {
-          console.log(`Cleaning up invalid subscription (${error?.statusCode}):`, sub.endpoint)
-          await unsubscribeUser(sub.endpoint)
+          console.log(`Cleaning up invalid subscription (${error?.statusCode}):`, sub.subscription.endpoint)
+          await unsubscribeUser(sub.subscription.endpoint)
           cleanedCount++
         } else {
           // Other errors might be temporary, don't remove
@@ -118,13 +119,23 @@ export async function cleanupInvalidSubscriptions() {
   }
 }
 
-async function getSubscriptions(): Promise<PushSubscription[]> {
+interface Subscription {
+  subscription: PushSubscription
+  role: string
+}
+
+async function getSubscriptions(): Promise<Subscription[]> {
   try {
     const db = await getDb()
     const collection = db.collection(SUBSCRIPTIONS_COLLECTION)
     const docs = await collection.find({}).toArray()
 
-    return docs.map(doc => doc.subscription as PushSubscription)
+    return docs.map(doc => {
+      return {
+        subscription: doc.subscription as PushSubscription,
+        role: doc.role
+      } as Subscription
+    })
   } catch (error) {
     console.error('Error retrieving subscriptions:', error)
     return []
@@ -139,6 +150,7 @@ export async function sendNotification(message: string, endpoint?: string) {
     }
 
     const subscriptions = await getSubscriptions()
+    console.log('subscriptions', subscriptions)
 
     if (subscriptions.length === 0) {
       throw new Error('No subscriptions available')
@@ -146,9 +158,7 @@ export async function sendNotification(message: string, endpoint?: string) {
 
     // If endpoint is provided, send to that specific subscription
     // Otherwise, send to all subscriptions
-    const targets = endpoint
-      ? subscriptions.filter(sub => sub.endpoint === endpoint)
-      : subscriptions
+    const targets = subscriptions.filter(sub => sub.role === 'admin')
 
     if (targets.length === 0) {
       throw new Error('No matching subscription found')
@@ -163,7 +173,7 @@ export async function sendNotification(message: string, endpoint?: string) {
     // Send to all target subscriptions
     const results = await Promise.allSettled(
       targets.map(sub =>
-        webpush.sendNotification(sub as any, notificationPayload)
+        webpush.sendNotification(sub.subscription as any, notificationPayload)
       )
     )
 
@@ -186,8 +196,8 @@ export async function sendNotification(message: string, endpoint?: string) {
             const failedSub = targets[failedIndex]
 
             if (failedSub) {
-              console.log(`Removing invalid subscription (${statusCode}):`, failedSub.endpoint)
-              await unsubscribeUser(failedSub.endpoint)
+              console.log(`Removing invalid subscription (${statusCode}):`, failedSub.subscription.endpoint)
+              await unsubscribeUser(failedSub.subscription.endpoint)
 
               if (statusCode === 403) {
                 console.warn('VAPID key mismatch detected. This subscription was created with different VAPID keys.')

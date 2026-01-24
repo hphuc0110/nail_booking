@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
 import { ChevronDown, ChevronUp, Check, Clock, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { sendPushNotification } from "@/lib/push-notification-plugin"
 
 const timeSlots = [
   "09:00",
@@ -114,6 +115,7 @@ export default function BookingPage() {
           const lockedSet = new Set(locked.map(lt => `${lt.date}-${lt.time}`))
           setLockedTimeSlots(lockedSet)
         }
+        await sendPushNotification(`🔔 Neue Buchung erhalten!\n${booking.customerName} - ${booking.date} um ${booking.time} Uhr\n€${booking.totalPrice.toFixed(2)}`)
       } else {
         setSubmitError("Failed to save booking. Please try again.")
       }
