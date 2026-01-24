@@ -165,9 +165,9 @@ export async function sendNotification(message: string, endpoint?: string) {
     }
 
     const notificationPayload = JSON.stringify({
-      title: 'Test Notification',
+      title: 'New Booking',
       body: message,
-      icon: '/icon.png',
+      icon: '/icons/android-launchericon-48-48.png',
     })
 
     // Send to all target subscriptions

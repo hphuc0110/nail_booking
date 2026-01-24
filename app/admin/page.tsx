@@ -345,10 +345,6 @@ export default function AdminPage() {
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   }
 
-  const handleSendTestNotification = async () => {
-    await sendPushNotification("Test notification")
-  }
-
   const handleRequestNotificationPermission = async () => {
     if ("Notification" in window && Notification.permission === "default") {
       const permission = await Notification.requestPermission()
@@ -372,7 +368,7 @@ export default function AdminPage() {
               <Link href="/" className="text-gray-600 hover:text-rose-600 flex-shrink-0">
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <h1 onClick={handleSendTestNotification} className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{t("adminPanel", lang)}</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">{t("adminPanel", lang)}</h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* Notification Bell */}
