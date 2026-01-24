@@ -114,16 +114,6 @@ export default function AdminPage() {
             })
           }
 
-          // // Send push notification for each new booking
-          // for (const booking of newBookingsList) {
-          //   try {
-          //     const message = `🔔 Neue Buchung erhalten!\n${booking.customerName} - ${booking.date} um ${booking.time} Uhr\n€${booking.totalPrice.toFixed(2)}`
-          //     await sendPushNotification(message)
-          //   } catch (error) {
-          //     console.error("Error sending push notification:", error)
-          //   }
-          // }
-
           // Hiển thị toast notification
           toast({
             title: "🔔 Neue Buchung erhalten!",
