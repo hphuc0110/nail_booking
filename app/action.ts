@@ -2,6 +2,7 @@
 
 import webpush from 'web-push'
 import { getDb } from '@/lib/mongodb'
+import { unsubscribeUser } from '@/app/push-subscribe-action'
 
 // Validate VAPID keys are set
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -20,59 +21,6 @@ if (!vapidPublicKey || !vapidPrivateKey) {
 }
 
 const SUBSCRIPTIONS_COLLECTION = 'push_subscriptions'
-
-export async function subscribeUser(sub: PushSubscription) {
-  try {
-    const db = await getDb()
-    const collection = db.collection(SUBSCRIPTIONS_COLLECTION)
-
-    // Use endpoint as unique identifier
-    // Serialize the subscription to ensure all properties are captured
-    const subscriptionData = {
-      endpoint: sub.endpoint,
-      role: 'admin',
-      keys: (sub as any).keys || null,
-      subscription: JSON.parse(JSON.stringify(sub)), // Full serialized subscription
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    // Upsert: update if exists, insert if not
-    await collection.updateOne(
-      { endpoint: sub.endpoint },
-      { $set: subscriptionData },
-      { upsert: true }
-    )
-
-    return { success: true }
-  } catch (error) {
-    console.error('Error storing subscription:', error)
-    // Don't throw - allow subscription to continue even if storage fails
-    return { success: false, error: 'Failed to store subscription' }
-  }
-}
-
-export async function unsubscribeUser(endpoint?: string) {
-  try {
-    const db = await getDb()
-    const collection = db.collection(SUBSCRIPTIONS_COLLECTION)
-
-    if (endpoint) {
-      // Remove specific subscription by endpoint
-      const result = await collection.deleteOne({ endpoint })
-      console.log(`Removed subscription: ${endpoint}`, result.deletedCount > 0 ? 'success' : 'not found')
-    } else {
-      // Remove all subscriptions (fallback)
-      const result = await collection.deleteMany({})
-      console.log(`Removed all subscriptions: ${result.deletedCount} deleted`)
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error('Error removing subscription:', error)
-    return { success: false, error: 'Failed to remove subscription' }
-  }
-}
 
 /**
  * Clean up subscriptions with VAPID key mismatches

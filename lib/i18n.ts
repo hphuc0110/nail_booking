@@ -39,6 +39,7 @@ export const translations = {
     // Booking Form
     selectServices: "Select Services",
     selectDate: "Select Date",
+    selectDateFirst: "Select a date first",
     selectTime: "Select Time",
     yourInfo: "Your Information",
     name: "Name",
@@ -147,6 +148,7 @@ export const translations = {
     // Booking Form
     selectServices: "Chọn Dịch Vụ",
     selectDate: "Chọn Ngày",
+    selectDateFirst: "Chọn ngày trước",
     selectTime: "Chọn Giờ",
     yourInfo: "Thông Tin Của Bạn",
     name: "Họ Tên",
@@ -255,6 +257,7 @@ export const translations = {
     // Booking Form
     selectServices: "Leistungen auswählen",
     selectDate: "Datum auswählen",
+    selectDateFirst: "Bitte zuerst ein Datum wählen",
     selectTime: "Zeit auswählen",
     yourInfo: "Ihre Informationen",
     name: "Name",

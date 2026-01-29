@@ -20,7 +20,7 @@
  * - Handle service worker updates
  */
 
-import { subscribeUser } from "@/app/action"
+import { subscribeUser } from "@/app/push-subscribe-action"
 import urlBase64ToUint8Array from "@/utils/web-push-utils"
 
 const SUBSCRIPTION_STORAGE_KEY = 'push_subscription_endpoint'
@@ -229,13 +229,21 @@ class PushNotificationPlugin {
 const pushNotificationPlugin = new PushNotificationPlugin()
 
 /**
- * Send a push notification message
+ * Send a push notification message (calls server API; safe to use from client).
  * @param message - The message to send
  * @returns Promise with result of sending notification
  */
 export async function sendPushNotification(message: string) {
-    const { sendNotification } = await import('@/app/action')
-    return await sendNotification(message)
+    const res = await fetch('/api/send-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+        throw new Error(data?.error ?? 'Failed to send notification')
+    }
+    return data
 }
 
 /**

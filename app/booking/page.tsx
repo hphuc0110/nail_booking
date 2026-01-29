@@ -300,68 +300,70 @@ export default function BookingPage() {
               </div>
             )}
 
-            {/* Step 2: Select Date & Time */}
+            {/* Step 2: Select Date & Time - Calendar + Time slots in one block */}
             {step === 2 && (
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 sm:p-6 border-b border-gray-100">
                   <h2 className="text-lg sm:text-xl font-bold text-gray-900">{t("selectDate", lang)}</h2>
                 </div>
 
-                <div className="p-2 sm:p-4 overflow-x-auto">
-                  <div className="flex justify-center min-w-0">
-                    <div className="w-full max-w-[320px] sm:max-w-none">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={handleDateSelect}
-                        disabled={(date) => {
-                          // Calendar component passes date at midnight in local timezone
-                          // We need to format it correctly in GMT+1
-                          const todayStr = getTodayGMT1()
-                          const dateStr = formatCalendarDateGMT1(date)
+                {/* Single block: calendar + time slots */}
+                <div className="p-3 sm:p-4 md:p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 md:gap-6 items-start">
+                    {/* Calendar */}
+                    <div className="overflow-x-auto flex justify-center md:justify-start">
+                      <div className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-full min-w-0">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={handleDateSelect}
+                          disabled={(date) => {
+                            const todayStr = getTodayGMT1()
+                            const dateStr = formatCalendarDateGMT1(date)
+                            const isPast = dateStr < todayStr
+                            const isLocked = lockedDates.includes(dateStr)
+                            return isPast || isLocked
+                          }}
+                          className="rounded-md border mx-auto w-full"
+                        />
+                      </div>
+                    </div>
 
-                          // Disable if date is strictly before today (not today itself) or if it's locked
-                          const isPast = dateStr < todayStr
-                          const isLocked = lockedDates.includes(dateStr)
+                    {/* Time slots - same block, scroll if needed */}
+                    <div className="min-w-0 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 md:min-h-[280px]">
+                      <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-2 sm:mb-3">{t("selectTime", lang)}</h3>
+                      {selectedDate ? (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-1.5 sm:gap-2 max-h-[260px] md:max-h-[240px] overflow-y-auto overflow-x-hidden pr-1">
+                          {timeSlots.map((time) => {
+                            const isPassed = isTimeSlotPassed(time)
+                            const dateStr = selectedDate ? formatDateGMT1(selectedDate) : ""
+                            const isLocked = dateStr ? lockedTimeSlots.has(`${dateStr}-${time}`) : false
+                            const isDisabled = isPassed || isLocked
 
-                          return isPast || isLocked
-                        }}
-                        className="rounded-md border mx-auto w-full"
-                      />
+                            return (
+                              <button
+                                key={time}
+                                onClick={() => !isDisabled && setSelectedTime(time)}
+                                disabled={isDisabled}
+                                title={isLocked ? t("timeSlotLocked", lang) || "This time slot is locked" : ""}
+                                className={`py-1.5 sm:py-2 px-1.5 sm:px-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium transition-colors ${isDisabled
+                                  ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                                  : selectedTime === time
+                                    ? "bg-rose-500 text-white"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                  }`}
+                              >
+                                {time}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 text-xs sm:text-sm">{t("selectDateFirst", lang) || "Select a date first"}</p>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                {selectedDate && (
-                  <div className="px-3 sm:px-4 md:px-6 pb-3 sm:pb-4">
-                    <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-2 sm:mb-3">{t("selectTime", lang)}</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1.5 sm:gap-2 max-h-[300px] sm:max-h-none overflow-y-auto">
-                      {timeSlots.map((time) => {
-                        const isPassed = isTimeSlotPassed(time)
-                        const dateStr = selectedDate ? formatDateGMT1(selectedDate) : ""
-                        const isLocked = dateStr ? lockedTimeSlots.has(`${dateStr}-${time}`) : false
-                        const isDisabled = isPassed || isLocked
-
-                        return (
-                          <button
-                            key={time}
-                            onClick={() => !isDisabled && setSelectedTime(time)}
-                            disabled={isDisabled}
-                            title={isLocked ? t("timeSlotLocked", lang) || "This time slot is locked" : ""}
-                            className={`py-1.5 sm:py-2 px-1.5 sm:px-2 md:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs md:text-sm font-medium transition-colors ${isDisabled
-                              ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                              : selectedTime === time
-                                ? "bg-rose-500 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              }`}
-                          >
-                            {time}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
 
                 <div className="p-4 sm:p-6 border-t border-gray-100 flex gap-2 sm:gap-3">
                   <Button variant="outline" onClick={() => setStep(1)} className="flex-1 text-sm sm:text-base">
