@@ -399,13 +399,12 @@ export const serviceCategories: ServiceCategory[] = [
 ]
 
 export const businessHours: BusinessHours[] = [
-  { day: "Monday", dayVi: "Thứ Hai", dayDe: "Montag", open: "09:00", close: "19:00", closed: false },
-  { day: "Tuesday", dayVi: "Thứ Ba", dayDe: "Dienstag", open: "09:00", close: "19:00", closed: false },
-  { day: "Wednesday", dayVi: "Thứ Tư", dayDe: "Mittwoch", open: "09:00", close: "19:00", closed: false },
-  { day: "Thursday", dayVi: "Thứ Năm", dayDe: "Donnerstag", open: "09:00", close: "19:00", closed: false },
-  { day: "Friday", dayVi: "Thứ Sáu", dayDe: "Freitag", open: "09:00", close: "19:00", closed: false },
-  { day: "Saturday", dayVi: "Thứ Bảy", dayDe: "Samstag", open: "09:00", close: "19:00", closed: false },
-  { day: "Sunday", dayVi: "Chủ Nhật", dayDe: "Sonntag", open: "09:00", close: "19:00", closed: false },
+  { day: "Monday", dayVi: "Thứ Hai", dayDe: "Montag", open: "09:00", close: "20:00", closed: false },
+  { day: "Tuesday", dayVi: "Thứ Ba", dayDe: "Dienstag", open: "09:00", close: "20:00", closed: false },
+  { day: "Wednesday", dayVi: "Thứ Tư", dayDe: "Mittwoch", open: "09:00", close: "20:00", closed: false },
+  { day: "Thursday", dayVi: "Thứ Năm", dayDe: "Donnerstag", open: "09:00", close: "20:00", closed: false },
+  { day: "Friday", dayVi: "Thứ Sáu", dayDe: "Freitag", open: "09:00", close: "20:00",  closed: false },
+  { day: "Saturday", dayVi: "Thứ Bảy", dayDe: "Samstag", open: "09:00", close: "20:00", closed: false },
 ]
 
 export const galleryImages = [
