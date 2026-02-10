@@ -7,7 +7,7 @@ import { serviceCategories } from "@/lib/data"
 import { saveBooking, generateId } from "@/lib/booking-store"
 import { getLockedDates } from "@/lib/locked-dates-store"
 import { getLockedTimeSlots } from "@/lib/locked-time-slots-store"
-import { getTodayGMT1, formatDateGMT1, formatCalendarDateGMT1, isTodayGMT1, isPastGMT1, isTimeSlotPassedGMT1, createDateTimeGMT1 } from "@/lib/timezone"
+import { getTodayGMT1, formatDateGMT1, formatCalendarDateGMT1, isTodayGMT1, isPastGMT1, isTimeSlotPassedGMT1, createDateTimeGMT1, isSundayGMT1 } from "@/lib/timezone"
 import type { Service, Booking } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -322,7 +322,8 @@ export default function BookingPage() {
                             const dateStr = formatCalendarDateGMT1(date)
                             const isPast = dateStr < todayStr
                             const isLocked = lockedDates.includes(dateStr)
-                            return isPast || isLocked
+                            const isSunday = isSundayGMT1(dateStr)
+                            return isPast || isLocked || isSunday
                           }}
                           className="rounded-md border mx-auto w-full"
                         />

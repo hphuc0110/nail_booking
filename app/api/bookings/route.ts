@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import type { Booking } from '@/lib/types'
 import { sendBookingConfirmationEmail } from '@/lib/email'
+import { isSundayGMT1 } from '@/lib/timezone'
 
 // GET - Lấy tất cả bookings
 export async function GET() {
@@ -34,6 +35,14 @@ export async function POST(request: NextRequest) {
           error: 'Missing required fields',
           message: 'Booking must have id, customerName, customerPhone, and customerEmail'
         },
+        { status: 400 }
+      )
+    }
+
+    // Không cho đặt lịch vào Chủ nhật (Sunday) - theo múi giờ GMT+1
+    if (booking.date && isSundayGMT1(booking.date)) {
+      return NextResponse.json(
+        { error: 'Sunday not available', message: 'Booking is not available on Sundays' },
         { status: 400 }
       )
     }

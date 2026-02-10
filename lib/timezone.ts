@@ -132,6 +132,15 @@ export function isPastGMT1(date: Date): boolean {
 }
 
 /**
+ * Check if a date string (YYYY-MM-DD) is Sunday in GMT+1.
+ * Used to block booking on Sundays.
+ */
+export function isSundayGMT1(dateStr: string): boolean {
+  const dateAtNoonGMT1 = new Date(dateStr + 'T12:00:00+01:00')
+  return dateAtNoonGMT1.getUTCDay() === 0
+}
+
+/**
  * Get time string (HH:MM) from a date in GMT+1
  */
 export function getTimeGMT1(date: Date): string {
