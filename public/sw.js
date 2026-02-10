@@ -9,6 +9,7 @@ self.addEventListener('push', function (event) {
             data: {
                 dateOfArrival: Date.now(),
                 primaryKey: '2',
+                url: data.data?.url || (self.location.origin + '/admin'),
             },
         }
         event.waitUntil(self.registration.showNotification(data.title, options))
@@ -18,5 +19,8 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
     console.log('Notification click received.')
     event.notification.close()
-    event.waitUntil(clients.openWindow('<https://your-website.com>'))
+    // Mở trang admin của site hiện tại (tránh 404)
+    var path = event.notification.data?.url || '/admin'
+    var urlToOpen = path.startsWith('http') ? path : (self.location.origin + (path.startsWith('/') ? path : '/' + path))
+    event.waitUntil(clients.openWindow(urlToOpen))
 })

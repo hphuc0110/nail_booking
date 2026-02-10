@@ -116,6 +116,9 @@ export async function sendNotification(message: string, endpoint?: string) {
       title: 'New Booking',
       body: message,
       icon: '/icons/android-launchericon-48-48.png',
+      data: {
+        url: '/admin',
+      },
     })
 
     // Send to all target subscriptions
