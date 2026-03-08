@@ -96,7 +96,7 @@ export default function BookingPage() {
         customerPhone: customerInfo.phone,
         customerEmail: customerInfo.email,
         services: selectedServices,
-        date: selectedDate ? formatDateGMT1(selectedDate) : "",
+        date: selectedDate ? formatCalendarDateGMT1(selectedDate) : "",
         time: selectedTime,
         notes: customerInfo.notes,
         status: "pending",
@@ -110,7 +110,7 @@ export default function BookingPage() {
         setBookingComplete(true)
         // Refresh locked time slots after successful booking
         if (selectedDate) {
-          const dateStr = formatDateGMT1(selectedDate)
+          const dateStr = formatCalendarDateGMT1(selectedDate)
           const locked = await getLockedTimeSlots(dateStr)
           const lockedSet = new Set(locked.map(lt => `${lt.date}-${lt.time}`))
           setLockedTimeSlots(lockedSet)
@@ -150,7 +150,7 @@ export default function BookingPage() {
   useEffect(() => {
     const loadLockedTimeSlots = async () => {
       if (selectedDate) {
-        const dateStr = formatDateGMT1(selectedDate)
+        const dateStr = formatCalendarDateGMT1(selectedDate)
         const locked = await getLockedTimeSlots(dateStr)
         const lockedSet = new Set(locked.map(lt => `${lt.date}-${lt.time}`))
         setLockedTimeSlots(lockedSet)
@@ -337,7 +337,7 @@ export default function BookingPage() {
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-1.5 sm:gap-2 max-h-[260px] md:max-h-[240px] overflow-y-auto overflow-x-hidden pr-1">
                           {timeSlots.map((time) => {
                             const isPassed = isTimeSlotPassed(time)
-                            const dateStr = selectedDate ? formatDateGMT1(selectedDate) : ""
+                            const dateStr = selectedDate ? formatCalendarDateGMT1(selectedDate) : ""
                             const isLocked = dateStr ? lockedTimeSlots.has(`${dateStr}-${time}`) : false
                             const isDisabled = isPassed || isLocked
 
@@ -481,7 +481,7 @@ export default function BookingPage() {
                 <div className="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs md:text-sm text-gray-600 mb-2">
                   <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0 mt-0.5" />
                   <span className="break-words">
-                    {formatDateGMT1(selectedDate)} {selectedTime && `- ${selectedTime}`}
+                    {formatCalendarDateGMT1(selectedDate)} {selectedTime && `- ${selectedTime}`}
                   </span>
                 </div>
               )}
