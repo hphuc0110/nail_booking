@@ -247,3 +247,107 @@ Das Team von AMICI NAILS SALON
   }
 }
 
+/** Send email when admin updates booking status to "confirmed" or "cancelled" (German) */
+export async function sendBookingStatusUpdateEmail(
+  booking: Booking,
+  newStatus: 'confirmed' | 'cancelled'
+) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY not configured. Status update email will not be sent.')
+    return { success: false, error: 'Resend API key not configured.' }
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  try {
+    const [year, month, day] = booking.date.split('-').map(Number)
+    const bookingDateObj = new Date(Date.UTC(year, month - 1, day))
+    const bookingDate = bookingDateObj.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Europe/Berlin',
+    })
+
+    const hours = Math.floor(booking.totalDuration / 60)
+    const minutes = booking.totalDuration % 60
+    const durationText = hours > 0
+      ? `${hours} ${hours === 1 ? 'Stunde' : 'Stunden'}${minutes > 0 ? ` ${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}` : ''}`
+      : `${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`
+
+    const servicesList = booking.services.map(service => 
+      `<tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${service.nameDe || service.name}</td><td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">€${service.price}</td></tr>`
+    ).join('')
+
+    const isConfirmed = newStatus === 'confirmed'
+
+    const subject = isConfirmed
+      ? `Termin bestätigt - ${booking.id} | AMICI NAILS SALON`
+      : `Termin storniert - ${booking.id} | AMICI NAILS SALON`
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${isConfirmed ? 'Termin bestätigt' : 'Termin storniert'}</title></head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, ${isConfirmed ? '#22c55e 0%, #16a34a 100%' : '#ef4444 0%, #dc2626 100%'}); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">AMICI NAILS SALON</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${isConfirmed ? 'Ihr Termin wurde bestätigt' : 'Ihr Termin wurde storniert'}</p>
+          </div>
+          <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+            <p style="font-size: 16px; margin-bottom: 20px;">Sehr geehrte/r <strong>${booking.customerName}</strong>,</p>
+            <p style="font-size: 16px; margin-bottom: 20px;">
+              ${isConfirmed
+                ? 'Ihr Termin bei <strong>AMICI NAILS SALON</strong> wurde bestätigt. Wir freuen uns auf Ihren Besuch!'
+                : 'Leider wurde Ihr Termin bei <strong>AMICI NAILS SALON</strong> storniert. Bei Fragen kontaktieren Sie uns gerne.'}
+            </p>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="color: ${isConfirmed ? '#22c55e' : '#ef4444'}; margin-top: 0; font-size: 20px; margin-bottom: 15px;">📋 Buchungsdetails</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px 0; color: #6b7280; width: 140px;">Buchungsnummer:</td><td style="padding: 8px 0; font-weight: bold; font-family: monospace;">${booking.id}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">📅 Datum:</td><td style="padding: 8px 0; font-weight: bold;">${bookingDate}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">🕐 Uhrzeit:</td><td style="padding: 8px 0; font-weight: bold;">${booking.time} Uhr</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">⏱️ Dauer:</td><td style="padding: 8px 0;">ca. ${durationText}</td></tr>
+              </table>
+            </div>
+            <div style="margin: 20px 0;">
+              <h3 style="color: ${isConfirmed ? '#22c55e' : '#ef4444'}; font-size: 18px; margin-bottom: 15px;">💅 Leistungen</h3>
+              <table style="width: 100%; border-collapse: collapse;">${servicesList}
+                <tr><td style="padding: 15px 0; border-top: 2px solid ${isConfirmed ? '#22c55e' : '#ef4444'}; font-weight: bold;">Gesamtpreis</td><td style="padding: 15px 0; border-top: 2px solid ${isConfirmed ? '#22c55e' : '#ef4444'}; text-align: right; font-weight: bold;">€${booking.totalPrice.toFixed(2)}</td></tr>
+              </table>
+            </div>
+            <p style="font-size: 16px; margin-top: 30px;">
+              Mit freundlichen Grüßen,<br><strong style="color: #f43f5e;">Das Team von AMICI NAILS SALON</strong>
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 14px;">© ${new Date().getFullYear()} AMICI NAILS SALON.</div>
+        </body>
+      </html>
+    `
+
+    const emailText = isConfirmed
+      ? `AMICI NAILS SALON - Termin bestätigt\n\nSehr geehrte/r ${booking.customerName},\n\nIhr Termin wurde bestätigt.\nBuchungsnummer: ${booking.id}\nDatum: ${bookingDate}\nUhrzeit: ${booking.time} Uhr\n\nMit freundlichen Grüßen,\nDas Team von AMICI NAILS SALON`
+      : `AMICI NAILS SALON - Termin storniert\n\nSehr geehrte/r ${booking.customerName},\n\nIhr Termin wurde storniert.\nBuchungsnummer: ${booking.id}\nDatum: ${bookingDate}\nUhrzeit: ${booking.time} Uhr\n\nBei Fragen kontaktieren Sie uns gerne.\nMit freundlichen Grüßen,\nDas Team von AMICI NAILS SALON`
+
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'AMICI NAILS SALON <onboarding@resend.dev>'
+    const result = await resend.emails.send({
+      from: fromEmail,
+      to: booking.customerEmail,
+      subject,
+      html: emailHtml,
+      text: emailText,
+    })
+
+    if (result.error) {
+      console.error('Status update email error:', result.error)
+      return { success: false, error: result.error.message, details: result.error }
+    }
+    console.log('Status update email sent:', booking.id, newStatus, result.data?.id)
+    return { success: true, messageId: result.data?.id, result }
+  } catch (error: any) {
+    console.error('sendBookingStatusUpdateEmail error:', error?.message)
+    return { success: false, error: error?.message, details: error }
+  }
+}
+

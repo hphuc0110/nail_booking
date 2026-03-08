@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import type { Booking } from '@/lib/types'
+import { sendBookingStatusUpdateEmail } from '@/lib/email'
 
 // GET - Lấy booking theo ID
 export async function GET(
@@ -56,6 +57,19 @@ export async function PUT(
     const updatedBooking = await db.collection<Booking>('bookings').findOne({
       id: id
     })
+    
+    // Gửi email thông báo trạng thái (xác nhận / hủy) bằng tiếng Đức - không chặn response
+    if (updatedBooking && (updates.status === 'confirmed' || updates.status === 'cancelled')) {
+      sendBookingStatusUpdateEmail(updatedBooking, updates.status).then((emailResult) => {
+        if (emailResult.success) {
+          console.log('✅ Status update email sent:', id, updates.status)
+        } else {
+          console.error('❌ Status update email failed:', id, emailResult.error)
+        }
+      }).catch((err) => {
+        console.error('❌ Status update email exception:', id, err?.message)
+      })
+    }
     
     return NextResponse.json(updatedBooking, { status: 200 })
   } catch (error) {

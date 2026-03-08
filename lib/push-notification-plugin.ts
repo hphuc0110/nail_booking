@@ -111,10 +111,14 @@ class PushNotificationPlugin {
             let sub = await this.registration.pushManager.getSubscription()
 
             if (!sub) {
-                // Create new subscription
+                // Create new subscription only if VAPID key is configured
                 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
                 if (!vapidPublicKey) {
-                    throw new Error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set')
+                    console.warn(
+                        'NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set. Push notifications are disabled. ' +
+                        'Add it to .env.local to enable push (see web-push for generating VAPID keys).'
+                    )
+                    return null
                 }
 
                 sub = await this.registration.pushManager.subscribe({
