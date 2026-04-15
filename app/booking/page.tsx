@@ -9,6 +9,7 @@ import { getLockedDates } from "@/lib/locked-dates-store"
 import { getLockedTimeSlots } from "@/lib/locked-time-slots-store"
 import { getTodayGMT1, formatDateGMT1, formatCalendarDateGMT1, isTodayGMT1, isPastGMT1, isTimeSlotPassedGMT1, createDateTimeGMT1, isSundayGMT1 } from "@/lib/timezone"
 import type { Service, Booking } from "@/lib/types"
+import { parseServicePriceForTotal } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -59,7 +60,7 @@ export default function BookingPage() {
   })
   const [bookingComplete, setBookingComplete] = useState(false)
 
-  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0)
+  const totalPrice = selectedServices.reduce((sum, s) => sum + parseServicePriceForTotal(s.price), 0)
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0)
 
   const getServiceName = (service: Service) => {

@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import type { Booking } from './types'
 import { formatDateGMT1 } from './timezone'
+import { formatServicePricePlain } from './utils'
 
 export async function sendBookingConfirmationEmail(booking: Booking) {
   // Check if Resend API key is configured
@@ -166,7 +167,7 @@ Dauer: ca. ${durationText}
 Kontakt: ${booking.customerPhone}
 
 Ihre ausgewählten Leistungen:
-${booking.services.map(s => `  • ${s.nameDe || s.name}: €${s.price.toFixed(2)}`).join('\n')}
+${booking.services.map(s => `  • ${s.nameDe || s.name}: €${formatServicePricePlain(s.price)}`).join('\n')}
 
 Gesamtpreis: €${booking.totalPrice.toFixed(2)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

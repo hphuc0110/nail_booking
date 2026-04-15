@@ -5,7 +5,8 @@ export interface Service {
   name: string
   nameVi: string
   nameDe: string // Added German name
-  price: number
+  /** Display value: plain number (€) or free text with digits, e.g. "ab 25" */
+  price: string | number
   priceFrom?: boolean // For "ab" prices
   duration: number // in minutes
   category: string
