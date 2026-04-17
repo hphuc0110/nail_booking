@@ -85,7 +85,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "New Set",
         nameVi: "Bộ mới",
         nameDe: "Neumodellage",
-        price: "32 Natur",
+        price: "37 Natur",
         duration: 45,
         category: "POWDER GEL",
         categoryVi: "GEL BỘT",
