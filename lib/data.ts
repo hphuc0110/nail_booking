@@ -233,7 +233,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Shellac",
         nameVi: "Shellac",
         nameDe: "Shell-Lack",
-        price: 30,
+        price: 35,
         duration: 45,
         category: "SHELLAC",
         categoryVi: "SHELLAC",
